@@ -34,7 +34,7 @@ export interface IProductMagento {
   }[];
 }
 
-export interface IAtributes {
+export interface IAttributes {
   sku: string;
   name: string;
   brand: string;

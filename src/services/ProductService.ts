@@ -2,10 +2,10 @@ import fs from "fs";
 import path from "path";
 import appConfig from "../config/app.config.js";
 import { logger } from "../utils/logger.js";
-import type { IProductMagento, IAtributes } from "../interfaces/interfaces.js";
+import type { IProductMagento, IAttributes } from "../interfaces/interfaces.js";
 
-// Atributes Json
-import { genderJson, brandJson } from "../assets/atributesJson.js";
+// attributes Json
+import { genderJson, brandJson } from "../assets/attributesJson.js";
 import MagentoApiService from "./MagentoApiService.js";
 
 export default abstract class ProductService {
@@ -25,7 +25,7 @@ export default abstract class ProductService {
     }
   }
 
-  static async getAtributesFromProducts(
+  static async getattributesFromProducts(
     productsMagento: IProductMagento[],
   ): Promise<any[]> {
     try {
@@ -49,47 +49,58 @@ export default abstract class ProductService {
   private static async getProductAttributes(
     product: IProductMagento,
     colorOptions: { label: string; value: string }[],
-  ): Promise<IAtributes> {
+  ): Promise<IAttributes> {
     try {
-      const productAtribute = {} as IAtributes;
-      productAtribute.sku = product.sku;
-      productAtribute.name = product.name;
-      productAtribute.configurable = product.sku.includes("PAI");
-      productAtribute.gender = this.getGenderFromProduct(product);
-      productAtribute.brand = this.getBrandFromProduct(product);
-      productAtribute.manufacturer_code =
+      const productattribute = {} as IAttributes;
+      productattribute.sku = product.sku;
+      productattribute.name = product.name;
+      productattribute.configurable = product.sku.includes("PAI");
+      productattribute.gender = this.getGenderFromProduct(product);
+      productattribute.brand = this.getBrandFromProduct(product);
+      productattribute.type = this.getTypeFromProduct(product);
+      productattribute.manufacturer_code =
         this.getManufacturerCodeFromProduct(product);
-      productAtribute.promotion = this.getIsPromotion(product);
-      productAtribute.color = this.getColorFromProduct(product, colorOptions);
+      productattribute.promotion = this.getIsPromotion(product);
+      productattribute.color = this.getColorFromProduct(product, colorOptions);
 
-      console.log("Atributos do produto:", productAtribute);
-      return productAtribute;
+      console.log("Atributos do produto:", productattribute);
+      return productattribute;
     } catch (error) {
       logger.error(
         `Erro ao obter atributos do produto ${product.sku}: ${error}`,
       );
-      return {} as IAtributes;
+      return {} as IAttributes;
     }
   }
 
   // Gênero
   private static getGenderFromProduct(product: IProductMagento): string {
-    const atribute = product.custom_attributes.find(
+    const attribute = product.custom_attributes.find(
       (attr) => attr.attribute_code === "genero",
     );
-    if (!atribute) return "Não definido";
-    const atributecode = Number(atribute?.value);
+    if (!attribute) return "Não definido";
+    const attributecode = Number(attribute?.value);
 
-    return genderJson[atributecode] || "Unisex";
+    return genderJson[attributecode] || "Unisex";
   }
 
   // Marca
   private static getBrandFromProduct(product: IProductMagento): string {
-    const atribute = product.custom_attributes.find(
+    const attribute = product.custom_attributes.find(
       (attr) => attr.attribute_code === "brands",
     );
-    if (!atribute) return "Não definido";
-    const brandCode = Number(atribute.value);
+    if (!attribute) return "Não definido";
+    const brandCode = Number(attribute.value);
+    return brandJson[brandCode] || "Não definido";
+  }
+
+  // Tipo
+  private static getTypeFromProduct(product: IProductMagento): string {
+    const attribute = product.custom_attributes.find(
+      (attr) => attr.attribute_code === "tipoprod",
+    );
+    if (!attribute) return "Não definido";
+    const brandCode = Number(attribute.value);
     return brandJson[brandCode] || "Não definido";
   }
 
@@ -97,19 +108,19 @@ export default abstract class ProductService {
   private static getManufacturerCodeFromProduct(
     product: IProductMagento,
   ): string {
-    const atribute = product.custom_attributes.find(
+    const attribute = product.custom_attributes.find(
       (attr) => attr.attribute_code === "ref_produto",
     );
-    if (!atribute) return "Não definido";
-    return atribute.value || "Não definido";
+    if (!attribute) return "Não definido";
+    return attribute.value || "Não definido";
   }
 
   // Promoção
   private static getIsPromotion(product: IProductMagento): boolean {
-    const atribute = product.custom_attributes.find(
+    const attribute = product.custom_attributes.find(
       (attr) => attr.attribute_code === "colecao",
     );
-    return atribute?.value === "PROMO";
+    return attribute?.value === "PROMO";
   }
 
   // Cor
