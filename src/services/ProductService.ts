@@ -10,6 +10,7 @@ import {
   brandJson,
   typeJson,
   numJson,
+  typeNumJson,
 } from "../assets/attributesJson.js";
 import MagentoApiService from "./MagentoApiService.js";
 
@@ -68,6 +69,7 @@ export default abstract class ProductService {
       productattribute.promotion = this.getIsPromotion(product);
       productattribute.color = this.getColorFromProduct(product, colorOptions);
       productattribute.numeration = this.getNumeration(product);
+      productattribute.typeNum = this.getTypeNum(productattribute.gender);
 
       console.log("Atributos do produto:", productattribute);
       return productattribute;
@@ -181,5 +183,9 @@ export default abstract class ProductService {
     }
 
     return numJson[result] || 961;
+  }
+
+  private static getTypeNum(gender: string): number {
+    return typeNumJson[gender] || 2258;
   }
 }

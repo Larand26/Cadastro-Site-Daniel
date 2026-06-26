@@ -46,6 +46,7 @@ export interface IAttributes {
   packaging: string;
   type: string;
   numeration: number;
+  typeNum: number;
   description: string;
   seo_description: string;
   seo_keywords: string;

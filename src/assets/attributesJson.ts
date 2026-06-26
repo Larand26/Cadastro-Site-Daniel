@@ -149,3 +149,11 @@ export const numJson: { [key: string]: number } = {
   "45/46": 1495,
   "TAM UNICO": 2473,
 };
+
+export const typeNumJson: { [key: string]: number } = {
+  Masculino: 1477,
+  Feminino: 1478,
+  Infantil: 1480,
+  Baby: 1481,
+  Unissex: 2258,
+};
