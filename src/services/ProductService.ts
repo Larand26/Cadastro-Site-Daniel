@@ -6,6 +6,7 @@ import type { IProductMagento, IAtributes } from "../interfaces/interfaces.js";
 
 // Atributes Json
 import { genderJson, brandJson } from "../assets/atributesJson.js";
+import MagentoApiService from "./MagentoApiService.js";
 
 export default abstract class ProductService {
   static async getManufacturersCodes(): Promise<string[]> {
@@ -28,9 +29,13 @@ export default abstract class ProductService {
     productsMagento: IProductMagento[],
   ): Promise<any[]> {
     try {
+      const colorOptions = await MagentoApiService.fetchColorOptions();
       Promise.all(
         productsMagento.map(async (product) => {
-          const attributes = await this.getProductAttributes(product);
+          const attributes = await this.getProductAttributes(
+            product,
+            colorOptions,
+          );
           return attributes;
         }),
       );
@@ -43,6 +48,7 @@ export default abstract class ProductService {
 
   private static async getProductAttributes(
     product: IProductMagento,
+    colorOptions: { label: string; value: string }[],
   ): Promise<IAtributes> {
     try {
       const productAtribute = {} as IAtributes;
@@ -54,6 +60,7 @@ export default abstract class ProductService {
       productAtribute.manufacturer_code =
         this.getManufacturerCodeFromProduct(product);
       productAtribute.promotion = this.getIsPromotion(product);
+      productAtribute.color = this.getColorFromProduct(product, colorOptions);
 
       console.log("Atributos do produto:", productAtribute);
       return productAtribute;
@@ -103,5 +110,22 @@ export default abstract class ProductService {
       (attr) => attr.attribute_code === "colecao",
     );
     return atribute?.value === "PROMO";
+  }
+
+  // Cor
+  private static getColorFromProduct(
+    product: IProductMagento,
+    colorOptions: { label: string; value: string }[],
+  ): string {
+    const attribute = product.custom_attributes.find(
+      (attr) => attr.attribute_code === "color",
+    );
+    if (!attribute?.value) {
+      return "Sem cor";
+    }
+    const color = colorOptions.find(
+      (el) => String(el.value) === String(attribute.value),
+    );
+    return color?.label || "Sem cor";
   }
 }
