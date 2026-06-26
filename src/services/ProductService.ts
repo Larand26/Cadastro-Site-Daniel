@@ -51,6 +51,8 @@ export default abstract class ProductService {
       productAtribute.configurable = product.sku.includes("PAI");
       productAtribute.gender = this.getGenderFromProduct(product);
       productAtribute.brand = this.getBrandFromProduct(product);
+      productAtribute.manufacturer_code =
+        this.getManufacturerCodeFromProduct(product);
       console.log("Atributos do produto:", productAtribute);
       return productAtribute;
     } catch (error) {
@@ -80,5 +82,16 @@ export default abstract class ProductService {
     if (!atribute) return "Não definido";
     const brandCode = Number(atribute.value);
     return brandJson[brandCode] || "Não definido";
+  }
+
+  // Código do fabricante
+  private static getManufacturerCodeFromProduct(
+    product: IProductMagento,
+  ): string {
+    const atribute = product.custom_attributes.find(
+      (attr) => attr.attribute_code === "ref_produto",
+    );
+    if (!atribute) return "Não definido";
+    return atribute.value || "Não definido";
   }
 }
