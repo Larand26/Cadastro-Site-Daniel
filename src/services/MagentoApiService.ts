@@ -29,7 +29,7 @@ export default abstract class MagentoApiService {
     manufacturersCodes: string[],
   ): Record<string, any> {
     const params: Record<string, any> = {
-      "searchCriteria[pageSize]": 100,
+      "searchCriteria[pageSize]": 1,
       "searchCriteria[currentPage]": 1,
 
       // --- GRUPO 0: Status (Condição E principal) ---
