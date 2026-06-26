@@ -47,4 +47,22 @@ export default abstract class MagentoApiService {
     }
     return params;
   }
+
+  // Pega as opções de cores
+  static async fetchColorOptions(): Promise<
+    { label: string; value: string }[]
+  > {
+    try {
+      const response = await axios.get(
+        `${appConfig.magentoApiUrl}/rest/V1/products/attributes/color`,
+        {
+          headers: { Authorization: `Bearer ${appConfig.magentoApiToken}` },
+        },
+      );
+      return response.data.options;
+    } catch (error) {
+      logger.error(`Erro ao pegar as opções de cores: ${error}`);
+      return [];
+    }
+  }
 }
