@@ -12,6 +12,7 @@ import {
   numJson,
   typeNumJson,
 } from "../assets/attributesJson.js";
+import { seoJson } from "../assets/seoJson.js";
 import MagentoApiService from "./MagentoApiService.js";
 
 export default abstract class ProductService {
@@ -70,6 +71,14 @@ export default abstract class ProductService {
       productattribute.color = this.getColorFromProduct(product, colorOptions);
       productattribute.numeration = this.getNumeration(product);
       productattribute.typeNum = this.getTypeNum(productattribute.gender);
+      productattribute.seo_description = this.getSeoDescription(
+        productattribute.name,
+        productattribute.brand,
+      );
+      productattribute.seo_keywords = this.getSeoKeyWords(
+        productattribute.name,
+        productattribute.brand,
+      );
 
       console.log("Atributos do produto:", productattribute);
       return productattribute;
@@ -185,7 +194,36 @@ export default abstract class ProductService {
     return numJson[result] || 961;
   }
 
+  // Código do tipo de numeração
   private static getTypeNum(gender: string): number {
     return typeNumJson[gender] || 2258;
+  }
+
+  // SEO Descrição
+  private static getSeoDescription(name: string, brand: string): string {
+    const randomIndex = Math.floor(Math.random() * seoJson.length);
+
+    // 1. Cria uma CÓPIA do objeto original para não alterar o JSON em memória
+    const seo = { ...seoJson[randomIndex] };
+
+    if (!seo.seoDescription) return "";
+
+    // 2. Faz os replaces na cópia
+    return seo.seoDescription
+      .replace(/\$nome/g, name)
+      .replace(/\$marca/g, brand);
+  }
+
+  // SEO palavras chave
+  private static getSeoKeyWords(name: string, brand: string): string {
+    const randomIndex = Math.floor(Math.random() * seoJson.length);
+
+    // 1. Cria uma CÓPIA do objeto original para não alterar o JSON em memória
+    const seo = { ...seoJson[randomIndex] };
+
+    if (!seo.seoKeyWords) return "";
+
+    // 2. Faz os replaces na cópia
+    return seo.seoKeyWords.replace(/\$nome/g, name).replace(/\$marca/g, brand);
   }
 }
