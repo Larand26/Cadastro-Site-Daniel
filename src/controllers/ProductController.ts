@@ -6,9 +6,9 @@ export default abstract class ProductController {
     return ProductService.getManufacturersCodes();
   }
 
-  static async getAtributesFromProducts(
+  static async getAttributesFromProducts(
     productsMagento: IProductMagento[],
   ): Promise<any[]> {
-    return ProductService.getAtributesFromProducts(productsMagento);
+    return ProductService.getAttributesFromProducts(productsMagento);
   }
 }

@@ -25,7 +25,7 @@ export default abstract class ProductService {
     }
   }
 
-  static async getattributesFromProducts(
+  static async getAttributesFromProducts(
     productsMagento: IProductMagento[],
   ): Promise<any[]> {
     try {
