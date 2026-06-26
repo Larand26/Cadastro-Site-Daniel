@@ -5,7 +5,7 @@ import { logger } from "../utils/logger.js";
 import type { IProductMagento, IAtributes } from "../interfaces/interfaces.js";
 
 // Atributes Json
-import { genderJson } from "../assets/atributesJson.js";
+import { genderJson, brandJson } from "../assets/atributesJson.js";
 
 export default abstract class ProductService {
   static async getManufacturersCodes(): Promise<string[]> {
@@ -50,6 +50,7 @@ export default abstract class ProductService {
       productAtribute.name = product.name;
       productAtribute.configurable = product.sku.includes("PAI");
       productAtribute.gender = this.getGenderFromProduct(product);
+      productAtribute.brand = this.getBrandFromProduct(product);
       console.log("Atributos do produto:", productAtribute);
       return productAtribute;
     } catch (error) {
@@ -69,5 +70,15 @@ export default abstract class ProductService {
     const atributecode = Number(atribute?.value);
 
     return genderJson[atributecode] || "Unisex";
+  }
+
+  // Marca
+  private static getBrandFromProduct(product: IProductMagento): string {
+    const atribute = product.custom_attributes.find(
+      (attr) => attr.attribute_code === "brands",
+    );
+    if (!atribute) return "Não definido";
+    const brandCode = Number(atribute.value);
+    return brandJson[brandCode] || "Não definido";
   }
 }
