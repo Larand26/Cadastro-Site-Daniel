@@ -5,7 +5,7 @@ import { logger } from "../utils/logger.js";
 import type { IProductMagento, IAttributes } from "../interfaces/interfaces.js";
 
 // attributes Json
-import { genderJson, brandJson } from "../assets/attributesJson.js";
+import { genderJson, brandJson, typeJson } from "../assets/attributesJson.js";
 import MagentoApiService from "./MagentoApiService.js";
 
 export default abstract class ProductService {
@@ -80,7 +80,6 @@ export default abstract class ProductService {
     );
     if (!attribute) return "Não definido";
     const attributecode = Number(attribute?.value);
-
     return genderJson[attributecode] || "Unisex";
   }
 
@@ -90,8 +89,8 @@ export default abstract class ProductService {
       (attr) => attr.attribute_code === "brands",
     );
     if (!attribute) return "Não definido";
-    const brandCode = Number(attribute.value);
-    return brandJson[brandCode] || "Não definido";
+    const attributecode = Number(attribute.value);
+    return brandJson[attributecode] || "Não definido";
   }
 
   // Tipo
@@ -100,8 +99,8 @@ export default abstract class ProductService {
       (attr) => attr.attribute_code === "tipoprod",
     );
     if (!attribute) return "Não definido";
-    const brandCode = Number(attribute.value);
-    return brandJson[brandCode] || "Não definido";
+    const attributecode = Number(attribute.value);
+    return typeJson[attributecode] || "Não definido";
   }
 
   // Código do fabricante

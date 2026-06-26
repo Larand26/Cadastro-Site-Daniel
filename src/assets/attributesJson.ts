@@ -18,3 +18,16 @@ export const brandJson: { [key: number]: string } = {
   11: "Teste",
   12: "PEGA FORTE",
 };
+
+export const typeJson: { [key: number]: string } = {
+  836: "Babuch",
+  155: "Bota",
+  75: "Chinelo de Dedo",
+  76: "Chinelo de Gáspea/Slide",
+  114: "Rasteirinhas",
+  77: "Sandália",
+  1826: "Sapatilha",
+  153: "Tamanco",
+  78: "Tênis",
+  2738: "BOLSA",
+};
