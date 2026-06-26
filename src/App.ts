@@ -10,12 +10,14 @@ export default abstract class App {
     const manufacturersCodes = await ProductController.getManufacturersCodes();
     logger.info("Manufacturers fetched: " + manufacturersCodes.join(", "));
     // Busca os produtos no Magento
-    const products =
+    const productsMagento =
       await MagentoApiController.fetchProductsByManufacturerCodes(
         manufacturersCodes,
       );
-    logger.info("Products fetched from Magento: " + products.length);
+    logger.info("Products fetched from Magento: " + productsMagento.length);
     // Pega os atributos dos produtos
+    const products =
+      ProductController.getAtributesFromProducts(productsMagento);
     // Adiciona os atributos dos produtos no Magento
   }
 }

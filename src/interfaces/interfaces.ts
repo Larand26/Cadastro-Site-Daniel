@@ -33,3 +33,26 @@ export interface IProductMagento {
     value: any;
   }[];
 }
+
+export interface IAtributes {
+  sku: string;
+  name: string;
+  brand: string;
+  gender: string;
+  manufacturer_code: string;
+  color: string;
+  pictures: string[];
+  resale_price: number;
+  packaging: string;
+  type: string;
+  numeration: string;
+  description: string;
+  seo_description: string;
+  seo_keywords: string;
+  visibility: number;
+  categories: string[];
+  configurable: boolean;
+  promotion: boolean;
+  created_at: string;
+  updated_at: string;
+}
