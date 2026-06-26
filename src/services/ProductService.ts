@@ -62,6 +62,7 @@ export default abstract class ProductService {
         this.getManufacturerCodeFromProduct(product);
       productattribute.promotion = this.getIsPromotion(product);
       productattribute.color = this.getColorFromProduct(product, colorOptions);
+      productattribute.numeration = this.getNumeration(product);
 
       console.log("Atributos do produto:", productattribute);
       return productattribute;
@@ -137,5 +138,42 @@ export default abstract class ProductService {
       (el) => String(el.value) === String(attribute.value),
     );
     return color?.label || "Sem cor";
+  }
+
+  // Numeração
+  private static getNumeration(product: IProductMagento): string {
+    const attribute = product.custom_attributes.find(
+      (attr) => attr.attribute_code === "grade_caixa",
+    );
+    const table = attribute?.value;
+    let numeration = table
+      .replace(/ /g, "")
+      .replace(/<table>/g, "")
+      .replace(/<\/table>/g, "")
+      .replace(/<tbody>/g, "")
+      .replace(/<\/tbody>/g, "")
+      .replace("<tr>", "")
+      .replace(/<\/tr>/g, "")
+      .split("<tr>")[0]
+      .replace("<td>", "")
+      .replace(/<\/td>/g, "")
+      .split("<td>");
+
+    // Pega os dois primeiros numeros do numeration[0]
+    const firstTwoNumbers = Number(numeration[0].slice(0, 2));
+
+    // Pega os dois últimos numeros do numeration[length - 1]
+    const lastTwoNumbers = Number(numeration.at(-1).slice(-2));
+
+    let result = "";
+
+    if (lastTwoNumbers == firstTwoNumbers) {
+      result = `${firstTwoNumbers}`;
+    } else if (lastTwoNumbers === firstTwoNumbers + 1) {
+      result = `${firstTwoNumbers}/${lastTwoNumbers}`;
+    } else {
+      result = `${firstTwoNumbers} ao ${lastTwoNumbers}`;
+    }
+    return result;
   }
 }
