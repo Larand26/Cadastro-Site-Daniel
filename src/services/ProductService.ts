@@ -53,6 +53,8 @@ export default abstract class ProductService {
       productAtribute.brand = this.getBrandFromProduct(product);
       productAtribute.manufacturer_code =
         this.getManufacturerCodeFromProduct(product);
+      productAtribute.promotion = this.getIsPromotion(product);
+
       console.log("Atributos do produto:", productAtribute);
       return productAtribute;
     } catch (error) {
@@ -93,5 +95,13 @@ export default abstract class ProductService {
     );
     if (!atribute) return "Não definido";
     return atribute.value || "Não definido";
+  }
+
+  // Promoção
+  private static getIsPromotion(product: IProductMagento): boolean {
+    const atribute = product.custom_attributes.find(
+      (attr) => attr.attribute_code === "colecao",
+    );
+    return atribute?.value === "PROMO";
   }
 }
