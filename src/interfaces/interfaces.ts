@@ -45,7 +45,7 @@ export interface IAttributes {
   resale_price: number;
   packaging: string;
   type: string;
-  numeration: string;
+  numeration: number;
   description: string;
   seo_description: string;
   seo_keywords: string;

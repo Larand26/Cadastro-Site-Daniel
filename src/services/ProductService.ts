@@ -5,7 +5,12 @@ import { logger } from "../utils/logger.js";
 import type { IProductMagento, IAttributes } from "../interfaces/interfaces.js";
 
 // attributes Json
-import { genderJson, brandJson, typeJson } from "../assets/attributesJson.js";
+import {
+  genderJson,
+  brandJson,
+  typeJson,
+  numJson,
+} from "../assets/attributesJson.js";
 import MagentoApiService from "./MagentoApiService.js";
 
 export default abstract class ProductService {
@@ -141,7 +146,7 @@ export default abstract class ProductService {
   }
 
   // Numeração
-  private static getNumeration(product: IProductMagento): string {
+  private static getNumeration(product: IProductMagento): number {
     const attribute = product.custom_attributes.find(
       (attr) => attr.attribute_code === "grade_caixa",
     );
@@ -174,6 +179,7 @@ export default abstract class ProductService {
     } else {
       result = `${firstTwoNumbers} ao ${lastTwoNumbers}`;
     }
-    return result;
+
+    return numJson[result] || 961;
   }
 }
