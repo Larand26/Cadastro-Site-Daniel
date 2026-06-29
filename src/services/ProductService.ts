@@ -14,6 +14,7 @@ import {
 } from "../assets/attributesJson.js";
 import { seoJson } from "../assets/seoJson.js";
 import MagentoApiService from "./MagentoApiService.js";
+import Mongo from "../db/Mongo.js";
 
 export default abstract class ProductService {
   static async getManufacturersCodes(): Promise<string[]> {
@@ -79,7 +80,15 @@ export default abstract class ProductService {
         productattribute.name,
         productattribute.brand,
       );
-
+      const { resale_price, packaging, description, pictures } =
+        await this.getAttributesFromMongoDB(
+          productattribute.manufacturer_code,
+          productattribute.color,
+        );
+      productattribute.resale_price = resale_price;
+      productattribute.packaging = packaging;
+      productattribute.description = description;
+      productattribute.pictures = pictures;
       console.log("Atributos do produto:", productattribute);
       return productattribute;
     } catch (error) {
@@ -225,5 +234,41 @@ export default abstract class ProductService {
 
     // 2. Faz os replaces na cópia
     return seo.seoKeyWords.replace(/\$nome/g, name).replace(/\$marca/g, brand);
+  }
+
+  private static async getAttributesFromMongoDB(
+    manufacturerCode: string,
+    colorName: string,
+  ): Promise<any> {
+    try {
+      const attributes = await Mongo.query(manufacturerCode, colorName);
+      const results = {} as any;
+      if (attributes?.preco_revenda) {
+        results.resale_price = Number(attributes.preco_revenda);
+      } else {
+        results.resale_price = 0;
+      }
+      if (attributes?.embalamento) {
+        results.packaging = attributes.embalamento;
+      } else {
+        results.packaging = "f";
+      }
+      if (attributes?.descricao_produto) {
+        results.description = attributes.descricao_produto;
+      } else {
+        results.description = "Sem descrição";
+      }
+      if (attributes?.fotos && attributes.fotos.length > 0) {
+        results.pictures = attributes.fotos.map((foto: Buffer) =>
+          foto.toString("base64"),
+        );
+      } else {
+        results.pictures = [];
+      }
+      return results;
+    } catch (error) {
+      console.error("Erro ao buscar atributos do MongoDB:", error);
+      return null;
+    }
   }
 }

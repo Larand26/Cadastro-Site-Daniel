@@ -6,4 +6,5 @@ export default {
   magentoApiUrl:
     process.env.MAGENTO_BASE_URL || "https://your-magento-site.com",
   magentoApiToken: process.env.MAGENTO_ACCESS_TOKEN || "your-magento-api-token",
+  mongoDbUrl: process.env.MONGO_DB_URL || "mongodb://localhost:27017/mydb",
 };
