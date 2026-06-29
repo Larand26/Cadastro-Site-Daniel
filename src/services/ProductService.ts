@@ -15,6 +15,7 @@ import {
 } from "../assets/attributesJson.js";
 import { seoJson } from "../assets/seoJson.js";
 import MagentoApiService from "./MagentoApiService.js";
+import ImageService from "./ImageService.js";
 import Mongo from "../db/Mongo.js";
 
 export default abstract class ProductService {
@@ -90,7 +91,6 @@ export default abstract class ProductService {
       productattribute.packaging = packaging;
       productattribute.description = description;
       productattribute.pictures = pictures;
-      console.log(productattribute.pictures);
       this.infos(productattribute);
       return productattribute;
     } catch (error) {
@@ -283,7 +283,14 @@ export default abstract class ProductService {
         results.description = "Sem descrição";
       }
       if (attributes?.fotos && attributes.fotos.length > 0) {
-        results.pictures = attributes.fotos;
+        results.pictures = await Promise.all(
+          attributes.fotos.map(async (foto: Buffer, index: number) => {
+            if (index === 0) {
+              return await ImageService.resizePrimaryImageBuffer(foto);
+            }
+            return await ImageService.resizeImageBuffer(foto);
+          }),
+        );
       } else {
         results.pictures = [];
       }
