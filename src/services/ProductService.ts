@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import chalk from "chalk";
 import appConfig from "../config/app.config.js";
 import { logger } from "../utils/logger.js";
 import type { IProductMagento, IAttributes } from "../interfaces/interfaces.js";
@@ -89,7 +90,7 @@ export default abstract class ProductService {
       productattribute.packaging = packaging;
       productattribute.description = description;
       productattribute.pictures = pictures;
-      console.log("Atributos do produto:", productattribute);
+      this.infos(productattribute);
       return productattribute;
     } catch (error) {
       logger.error(
@@ -97,6 +98,27 @@ export default abstract class ProductService {
       );
       return {} as IAttributes;
     }
+  }
+
+  // Infos
+  private static infos(product: IAttributes): void {
+    const divider = chalk.gray("-".repeat(50));
+    const label = (text: string) => chalk.cyanBright(text.padEnd(20, " "));
+
+    console.log(divider);
+    console.log(chalk.bold.bgBlue.white(" PRODUTO "), chalk.bold(product.name));
+    console.log(`${label("SKU")}: ${chalk.whiteBright(product.sku)}`);
+    console.log(`${label("Nome")}: ${chalk.whiteBright(product.name)}`);
+    console.log(`${label("Gênero")}: ${chalk.whiteBright(product.gender)}`);
+    console.log(`${label("Marca")}: ${chalk.whiteBright(product.brand)}`);
+    console.log(`${label("Tipo")}: ${chalk.whiteBright(product.type)}`);
+    console.log(
+      `${label("Preço de venda")}: ${chalk.whiteBright(`R$ ${product.resale_price},99`)}`,
+    );
+    console.log(
+      `${label("Quantidade de fotos")}: ${chalk.whiteBright(product.pictures ? product.pictures.length : 0)}`,
+    );
+    console.log(divider);
   }
 
   // Gênero
