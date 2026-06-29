@@ -90,6 +90,7 @@ export default abstract class ProductService {
       productattribute.packaging = packaging;
       productattribute.description = description;
       productattribute.pictures = pictures;
+      console.log(productattribute.pictures);
       this.infos(productattribute);
       return productattribute;
     } catch (error) {
@@ -258,6 +259,7 @@ export default abstract class ProductService {
     return seo.seoKeyWords.replace(/\$nome/g, name).replace(/\$marca/g, brand);
   }
 
+  // Busca atributos do MongoDB
   private static async getAttributesFromMongoDB(
     manufacturerCode: string,
     colorName: string,
@@ -281,9 +283,7 @@ export default abstract class ProductService {
         results.description = "Sem descrição";
       }
       if (attributes?.fotos && attributes.fotos.length > 0) {
-        results.pictures = attributes.fotos.map((foto: Buffer) =>
-          foto.toString("base64"),
-        );
+        results.pictures = attributes.fotos;
       } else {
         results.pictures = [];
       }

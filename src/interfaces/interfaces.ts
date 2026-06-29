@@ -41,7 +41,7 @@ export interface IAttributes {
   gender: string;
   manufacturer_code: string;
   color: string;
-  pictures: string[];
+  pictures: Buffer[];
   resale_price: number;
   packaging: string;
   type: string;
