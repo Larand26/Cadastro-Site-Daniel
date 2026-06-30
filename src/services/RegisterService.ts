@@ -123,11 +123,15 @@ export default abstract class RegisterService {
 
   // Data de início da coleção
   private static insertNewsFromDate(product: IAttributes): attribute {
+    if (product.configurable)
+      return { attribute_code: "news_from_date", value: "" };
     return { attribute_code: "news_from_date", value: product.news_from_date };
   }
 
   // Data de fim da coleção
   private static insertNewsToDate(product: IAttributes): attribute {
+    if (product.configurable)
+      return { attribute_code: "news_to_date", value: "" };
     return { attribute_code: "news_to_date", value: product.news_to_date };
   }
 
