@@ -37,6 +37,10 @@ export default abstract class RegisterService {
           product.sku,
           media,
         );
+
+        if (responseAttributes.success || responseMedia.success) {
+          await MagentoApiService.activateProduct(product.sku);
+        }
       }
     } catch (error) {
       console.error(`Erro ao registrar os produtos: ${error}`);

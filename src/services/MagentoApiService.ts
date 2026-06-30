@@ -143,4 +143,42 @@ export default abstract class MagentoApiService {
       message: "Mídia do produto adicionada com sucesso.",
     };
   }
+
+  // Ativa o produto no Magento
+  static async activateProduct(
+    sku: string,
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const payload = {
+        product: {
+          sku,
+          status: appConfig.activeProducts ? 1 : 2, // Ativo ou Inativo
+        },
+      };
+      console.log(
+        `Ativando produto ${sku} com status: ${payload.product.status}`,
+      );
+      await axios.put(
+        `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${appConfig.magentoApiToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    } catch (error) {
+      logger.error(`Erro ao ativar o produto ${sku} no Magento: ${error}`);
+      console.log(JSON.stringify(error, null, 2));
+      return {
+        success: false,
+        message: "Erro ao ativar o produto.",
+      };
+    }
+    return {
+      success: true,
+      message: "Produto ativado com sucesso.",
+    };
+  }
 }

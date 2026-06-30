@@ -8,4 +8,5 @@ export default {
   magentoApiToken: process.env.MAGENTO_ACCESS_TOKEN || "your-magento-api-token",
   mongoDbUrl: process.env.MONGO_DB_URL || "mongodb://localhost:27017/mydb",
   qualityOfImages: Number(process.env.QUALITY_OF_IMAGES) || 45,
+  activeProducts: process.env.ACTIVE_PRODUCTS === "true" || false,
 };
