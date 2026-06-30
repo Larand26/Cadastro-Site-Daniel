@@ -1,5 +1,7 @@
 import type { IAttributes } from "../interfaces/interfaces.js";
 
+import Utils from "../utils/Utils.js";
+
 interface attribute {
   attribute_code: string;
   value: any;
@@ -21,6 +23,8 @@ export default abstract class RegisterService {
         attributes.push(this.insertSeoTitle(product));
         attributes.push(this.insertNewsFromDate(product));
         attributes.push(this.insertNewsToDate(product));
+
+        const media = this.insertMedia(product);
       }
     } catch (error) {
       console.error(`Erro ao registrar os produtos: ${error}`);
@@ -86,5 +90,35 @@ export default abstract class RegisterService {
   // Data de fim da coleção
   private static insertNewsToDate(product: IAttributes): attribute {
     return { attribute_code: "news_to_date", value: product.news_to_date };
+  }
+
+  // Imagens
+  private static insertMedia(product: IAttributes): any[] {
+    if (product.pictures.length === 0) return [];
+    const media = product.pictures.map((picture: Buffer, index: number) => {
+      const base64Image = picture.toString("base64");
+      return {
+        media_type: "image",
+        label: `${product.name}`,
+        position: index + 1,
+        disabled: false,
+        types:
+          index === 0
+            ? [
+                "image",
+                "small_image",
+                "thumbnail",
+                "swatch_image",
+                "flash_sale_image",
+              ]
+            : [],
+        content: {
+          base64_encoded_data: base64Image,
+          type: "image/jpeg",
+          name: Utils.cleanFileName(product.name) + "_" + (index + 1) + ".jpg",
+        },
+      };
+    });
+    return media;
   }
 }
