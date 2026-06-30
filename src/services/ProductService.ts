@@ -45,7 +45,7 @@ export default abstract class ProductService {
   ): Promise<any[]> {
     try {
       const colorOptions = await MagentoApiService.fetchColorOptions();
-      Promise.all(
+      const productAttributes = await Promise.all(
         productsMagento.map(async (product) => {
           const attributes = await this.getProductAttributes(
             product,
@@ -54,7 +54,7 @@ export default abstract class ProductService {
           return attributes;
         }),
       );
-      return [];
+      return productAttributes;
     } catch (error) {
       logger.error(`Erro ao processar os produtos: ${error}`);
       return [];

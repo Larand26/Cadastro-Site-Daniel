@@ -17,7 +17,7 @@ export default abstract class App {
     logger.info("Products fetched from Magento: " + productsMagento.length);
     // Pega os atributos dos produtos
     const products =
-      ProductController.getAttributesFromProducts(productsMagento);
+      await ProductController.getAttributesFromProducts(productsMagento);
     // Adiciona os atributos dos produtos no Magento
   }
 }
