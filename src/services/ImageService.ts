@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import appConfig from "../config/app.config.js";
 
 export default class ImageService {
   static async resizeImageBuffer(
@@ -29,7 +30,11 @@ export default class ImageService {
           fit: "contain",
           background: { r: 255, g: 255, b: 255, alpha: 1 },
         })
-        .toFormat("jpeg", { quality: 45, progressive: true, force: true })
+        .toFormat("jpeg", {
+          quality: appConfig.qualityOfImages,
+          progressive: true,
+          force: true,
+        })
         .toBuffer();
       return resizedImageBuffer;
     } catch (error) {
