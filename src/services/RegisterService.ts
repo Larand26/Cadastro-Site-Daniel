@@ -11,39 +11,62 @@ interface attribute {
 export default abstract class RegisterService {
   static async registerProducts(products: IAttributes[]): Promise<void> {
     try {
-      for (const product of products) {
-        const attributes = [];
-        attributes.push(this.insertCategories(product));
-        attributes.push(this.insertPackaging(product));
-        attributes.push(this.insertNumeration(product));
-        attributes.push(this.insertTypeNum(product));
-        attributes.push(this.insertResalePrice(product));
-        attributes.push(this.insertDescription(product));
-        attributes.push(this.insertSeoDescription(product));
-        attributes.push(this.insertSeoKeywords(product));
-        attributes.push(this.insertSeoTitle(product));
-        attributes.push(this.insertNewsFromDate(product));
-        attributes.push(this.insertNewsToDate(product));
+      // Mapeamos o array de produtos para um array de Promises
+      const productPromises = products.map(async (product) => {
+        try {
+          const attributes = [
+            this.insertCategories(product),
+            this.insertPackaging(product),
+            this.insertNumeration(product),
+            this.insertTypeNum(product),
+            this.insertResalePrice(product),
+            this.insertDescription(product),
+            this.insertSeoDescription(product),
+            this.insertSeoKeywords(product),
+            this.insertSeoTitle(product),
+            this.insertNewsFromDate(product),
+            this.insertNewsToDate(product),
+          ];
 
-        const responseAttributes =
-          await MagentoApiService.updateProductAttributes(
+          const responseAttributes =
+            await MagentoApiService.updateProductAttributes(
+              product.sku,
+              attributes,
+            );
+
+          const media = this.insertMedia(product);
+          const responseMedia = await MagentoApiService.addProductMedia(
             product.sku,
-            attributes,
+            media,
           );
 
-        const media = this.insertMedia(product);
-
-        const responseMedia = await MagentoApiService.addProductMedia(
-          product.sku,
-          media,
-        );
-
-        if (responseAttributes.success || responseMedia.success) {
-          await MagentoApiService.activateProduct(product.sku);
+          if (responseAttributes.success || responseMedia.success) {
+            await MagentoApiService.activateProduct(product.sku);
+          }
+          return {
+            success: responseAttributes.success && responseMedia.success,
+            product: product,
+          };
+        } catch (innerError) {
+          console.error(
+            `Erro ao processar o produto ${product.sku}:`,
+            innerError,
+          );
+          return {
+            success: false,
+            product: product,
+          };
         }
-      }
+      });
+
+      // Dispara todas as promises de produtos simultaneamente
+      await Promise.all(productPromises);
+
+      console.log(
+        "Processamento de todos os produtos concluído com Promise.all.",
+      );
     } catch (error) {
-      console.error(`Erro ao registrar os produtos: ${error}`);
+      console.error(`Erro fatal ao registrar a fila de produtos: ${error}`);
     }
   }
 
