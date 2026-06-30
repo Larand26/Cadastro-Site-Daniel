@@ -32,6 +32,11 @@ export default abstract class RegisterService {
           );
 
         const media = this.insertMedia(product);
+
+        const responseMedia = await MagentoApiService.addProductMedia(
+          product.sku,
+          media,
+        );
       }
     } catch (error) {
       console.error(`Erro ao registrar os produtos: ${error}`);

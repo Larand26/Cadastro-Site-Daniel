@@ -34,7 +34,7 @@ export default abstract class MagentoApiService {
 
       // --- GRUPO 0: Status (Condição E principal) ---
       "searchCriteria[filterGroups][0][filters][0][field]": "status",
-      "searchCriteria[filterGroups][0][filters][0][value]": 1,
+      "searchCriteria[filterGroups][0][filters][0][value]": 2,
       "searchCriteria[filterGroups][0][filters][0][conditionType]": "eq",
     };
     for (let i = 0; i < manufacturersCodes.length; i++) {
@@ -102,6 +102,45 @@ export default abstract class MagentoApiService {
     return {
       success: true,
       message: "Atributos do produto atualizados com sucesso.",
+    };
+  }
+
+  static async addProductMedia(
+    sku: string,
+    media: any[],
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const payload = {
+        product: {
+          sku,
+          // CORREÇÃO: A chave correta é media_gallery_entries
+          media_gallery_entries: media,
+        },
+      };
+
+      await axios.put(
+        `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${appConfig.magentoApiToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    } catch (error) {
+      logger.error(
+        `Erro ao adicionar mídia ao produto ${sku} no Magento: ${error}`,
+      );
+      console.log(JSON.stringify(error, null, 2));
+      return {
+        success: false,
+        message: "Erro ao adicionar mídia ao produto.",
+      };
+    }
+    return {
+      success: true,
+      message: "Mídia do produto adicionada com sucesso.",
     };
   }
 }
