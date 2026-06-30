@@ -97,7 +97,10 @@ export default abstract class ProductService {
       productattribute.description = description;
       productattribute.pictures = pictures;
       productattribute.categories = this.getCategorys(productattribute);
-      console.log("Categorias do produto:", productattribute.categories);
+      const { news_from_date, news_to_date } =
+        this.getDatesFromProduct(product);
+      productattribute.news_from_date = news_from_date;
+      productattribute.news_to_date = news_to_date;
       this.infos(productattribute);
       return productattribute;
     } catch (error) {
@@ -422,5 +425,32 @@ export default abstract class ProductService {
       (id, idx, arr) => id !== 0 && arr.indexOf(id) === idx,
     );
     return categoryIds || [];
+  }
+
+  // Pega as datas de criação e atualização do produto
+  private static getDatesFromProduct(product: IProductMagento): {
+    news_from_date: string;
+    news_to_date: string;
+  } {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    // dia 20 desse mês e ano, às 00:00:00
+    const fromDate = new Date(year, month, 20, 0, 0, 0);
+
+    // dia 20 do próximo mês, às 23:59:59 (Se for Dezembro, o JS joga para Janeiro do ano seguinte)
+    const toDate = new Date(year, month + 1, 20, 23, 59, 59);
+
+    const formatter = new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+    return {
+      news_from_date: formatter.format(fromDate),
+      news_to_date: formatter.format(toDate),
+    };
   }
 }

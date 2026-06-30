@@ -54,8 +54,8 @@ export interface IAttributes {
   categories: number[];
   configurable: boolean;
   promotion: boolean;
-  created_at: string;
-  updated_at: string;
+  news_from_date: string;
+  news_to_date: string;
 }
 
 export interface ICategoryCondition {
