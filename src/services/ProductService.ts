@@ -3,7 +3,11 @@ import path from "path";
 import chalk from "chalk";
 import appConfig from "../config/app.config.js";
 import { logger } from "../utils/logger.js";
-import type { IProductMagento, IAttributes } from "../interfaces/interfaces.js";
+import type {
+  IProductMagento,
+  IAttributes,
+  ICategoryCondition,
+} from "../interfaces/interfaces.js";
 
 // attributes Json
 import {
@@ -14,6 +18,7 @@ import {
   typeNumJson,
 } from "../assets/attributesJson.js";
 import { seoJson } from "../assets/seoJson.js";
+import { rulesCategoryJson } from "../assets/rulesCategoryJson.js";
 import MagentoApiService from "./MagentoApiService.js";
 import ImageService from "./ImageService.js";
 import Mongo from "../db/Mongo.js";
@@ -91,6 +96,8 @@ export default abstract class ProductService {
       productattribute.packaging = packaging;
       productattribute.description = description;
       productattribute.pictures = pictures;
+      productattribute.categories = this.getCategorys(productattribute);
+      console.log("Categorias do produto:", productattribute.categories);
       this.infos(productattribute);
       return productattribute;
     } catch (error) {
@@ -299,5 +306,121 @@ export default abstract class ProductService {
       console.error("Erro ao buscar atributos do MongoDB:", error);
       return null;
     }
+  }
+
+  // Categorias
+  private static getCategorys(product: IAttributes): number[] {
+    let categoryIds = [] as number[];
+
+    for (const rule of rulesCategoryJson) {
+      const conditions = rule.rules as ICategoryCondition[];
+
+      for (const condition of conditions) {
+        // Regra "All"
+        if (condition.all) {
+          for (const item of condition.all) {
+            if (Array.isArray(item.categoryId)) {
+              categoryIds = categoryIds.concat(item.categoryId);
+            } else {
+              categoryIds.push(item.categoryId);
+            }
+          }
+        }
+
+        // Regra "Gender + type"
+        if (condition.gender && condition.type) {
+          const genderMatch = condition.gender.find(
+            (g) => g.value === product.gender,
+          );
+          const typeMatch = condition.type.find(
+            (t) => t.value === product.type,
+          );
+          if (genderMatch && typeMatch) {
+            if (typeMatch.categoryId !== 0)
+              categoryIds.push(typeMatch.categoryId);
+            if (genderMatch.categoryId !== 0)
+              categoryIds.push(genderMatch.categoryId);
+          }
+        }
+
+        // Regra "Brand"
+        if (condition.brand && condition.gender) {
+          const genderMatch = condition.gender.find(
+            (g) => g.value === product.gender,
+          );
+          const brandMatch = condition.brand.find(
+            (b) => b.value === product.brand,
+          );
+          if (genderMatch && brandMatch) {
+            if (brandMatch.categoryId !== 0)
+              categoryIds.push(brandMatch.categoryId);
+            if (genderMatch.categoryId !== 0)
+              categoryIds.push(genderMatch.categoryId);
+          }
+        }
+
+        // Regra "Others"
+        if (condition.name) {
+          for (const item of condition.name) {
+            if (Array.isArray(item.value)) {
+              for (const val of item.value) {
+                if (product.name && product.name.includes(val)) {
+                  if (Array.isArray(item.categoryId)) {
+                    categoryIds = categoryIds.concat(item.categoryId);
+                  } else {
+                    categoryIds.push(item.categoryId);
+                  }
+                }
+              }
+            } else {
+              if (product.name && product.name.includes(item.value)) {
+                if (Array.isArray(item.categoryId)) {
+                  categoryIds = categoryIds.concat(item.categoryId);
+                } else {
+                  categoryIds.push(item.categoryId);
+                }
+              }
+            }
+          }
+        }
+
+        // Regra "Promotion"
+        if (condition.promotion && condition.gender) {
+          const promoMatch = condition.promotion.find((p) =>
+            product.promotion ? "PROMO" : "NÃO PROMO" === p.value,
+          );
+          if (promoMatch) {
+            if (promoMatch.categoryId !== 0)
+              categoryIds.push(promoMatch.categoryId);
+
+            const genderMatch = condition.gender.find(
+              (g) => g.value === product.gender,
+            );
+            if (genderMatch && genderMatch.categoryId !== 0)
+              categoryIds.push(genderMatch.categoryId);
+          }
+          // Remove a categoria de lançamento se for promoção
+          if (promoMatch && promoMatch.value === "PROMO") {
+            categoryIds = categoryIds.filter((id) => id !== 173);
+          }
+        }
+
+        // Regra "Release"
+        if (condition.gender && (rule as any).name === "Release") {
+          const genderMatch = condition.gender.find(
+            (g) => g.value === product.gender,
+          );
+          if (genderMatch && genderMatch.categoryId !== 0) {
+            categoryIds.push(genderMatch.categoryId);
+          }
+        }
+      }
+    }
+
+    // Remover duplicados e zeros
+    categoryIds = categoryIds.filter(
+      (id, idx, arr) => id !== 0 && arr.indexOf(id) === idx,
+    );
+    return categoryIds || [];
   }
 }

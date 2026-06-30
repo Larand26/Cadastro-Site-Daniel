@@ -51,9 +51,18 @@ export interface IAttributes {
   seo_description: string;
   seo_keywords: string;
   visibility: number;
-  categories: string[];
+  categories: number[];
   configurable: boolean;
   promotion: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface ICategoryCondition {
+  all?: any[];
+  gender?: { value: string; categoryId: number }[];
+  type?: { value: string; categoryId: number }[];
+  brand?: { value: string; categoryId: number }[];
+  name?: { value: string | string[]; categoryId: number | number[] }[];
+  promotion?: { value: string; categoryId: number }[];
 }
