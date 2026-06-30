@@ -1,5 +1,6 @@
 import type { IAttributes } from "../interfaces/interfaces.js";
 
+import MagentoApiService from "./MagentoApiService.js";
 import Utils from "../utils/Utils.js";
 
 interface attribute {
@@ -23,6 +24,12 @@ export default abstract class RegisterService {
         attributes.push(this.insertSeoTitle(product));
         attributes.push(this.insertNewsFromDate(product));
         attributes.push(this.insertNewsToDate(product));
+
+        const responseAttributes =
+          await MagentoApiService.updateProductAttributes(
+            product.sku,
+            attributes,
+          );
 
         const media = this.insertMedia(product);
       }

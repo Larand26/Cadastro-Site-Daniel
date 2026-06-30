@@ -65,4 +65,43 @@ export default abstract class MagentoApiService {
       return [];
     }
   }
+
+  // Atualiza os atributos do produto no Magento
+  static async updateProductAttributes(
+    sku: string,
+    attributes: { attribute_code: string; value: any }[],
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const payload = {
+        product: {
+          sku,
+          custom_attributes: attributes,
+        },
+      };
+
+      await axios.put(
+        `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${appConfig.magentoApiToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    } catch (error) {
+      logger.error(
+        `Erro ao atualizar os atributos do produto ${sku} no Magento: ${error}`,
+      );
+      console.log(JSON.stringify(error, null, 2));
+      return {
+        success: false,
+        message: "Erro ao atualizar os atributos do produto.",
+      };
+    }
+    return {
+      success: true,
+      message: "Atributos do produto atualizados com sucesso.",
+    };
+  }
 }

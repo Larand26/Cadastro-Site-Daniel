@@ -22,6 +22,7 @@ import { rulesCategoryJson } from "../assets/rulesCategoryJson.js";
 import MagentoApiService from "./MagentoApiService.js";
 import ImageService from "./ImageService.js";
 import Mongo from "../db/Mongo.js";
+import Utils from "../utils/Utils.js";
 
 export default abstract class ProductService {
   static async getManufacturersCodes(): Promise<string[]> {
@@ -97,8 +98,7 @@ export default abstract class ProductService {
       productattribute.description = description;
       productattribute.pictures = pictures;
       productattribute.categories = this.getCategorys(productattribute);
-      const { news_from_date, news_to_date } =
-        this.getDatesFromProduct(product);
+      const { news_from_date, news_to_date } = this.getDatesFromProduct();
       productattribute.news_from_date = news_from_date;
       productattribute.news_to_date = news_to_date;
       this.infos(productattribute);
@@ -428,29 +428,17 @@ export default abstract class ProductService {
   }
 
   // Pega as datas de criação e atualização do produto
-  private static getDatesFromProduct(product: IProductMagento): {
+  private static getDatesFromProduct(): {
     news_from_date: string;
     news_to_date: string;
   } {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-
-    // dia 20 desse mês e ano, às 00:00:00
-    const fromDate = new Date(year, month, 20, 0, 0, 0);
-
-    // dia 20 do próximo mês, às 23:59:59 (Se for Dezembro, o JS joga para Janeiro do ano seguinte)
-    const toDate = new Date(year, month + 1, 20, 23, 59, 59);
-
-    const formatter = new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1;
+    const to = new Date(`${year}-${month}-20 00:00:00`);
+    const from = new Date(`${year}-${month + 1}-20 00:00:00`);
     return {
-      news_from_date: formatter.format(fromDate),
-      news_to_date: formatter.format(toDate),
+      news_from_date: Utils.formatDateToMagento(to),
+      news_to_date: Utils.formatDateToMagento(from),
     };
   }
 }
