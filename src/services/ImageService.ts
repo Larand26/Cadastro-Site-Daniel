@@ -10,7 +10,11 @@ export default class ImageService {
     try {
       const resizedImageBuffer = await sharp(imageBuffer)
         .resize(width, height, { fit: "inside", withoutEnlargement: true })
-        .toFormat("jpeg", { quality: 45, progressive: true, force: true })
+        .toFormat("jpeg", {
+          quality: appConfig.qualityOfImages,
+          progressive: true,
+          force: true,
+        })
         .toBuffer();
       return resizedImageBuffer;
     } catch (error) {

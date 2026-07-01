@@ -140,6 +140,7 @@ export default abstract class RegisterService {
 
   // Imagens
   private static insertMedia(product: IAttributes): any[] {
+    if (product.configurable) return [];
     if (product.pictures.length === 0) return [];
     const media = product.pictures.map((picture: Buffer, index: number) => {
       const base64Image = picture.toString("base64");
