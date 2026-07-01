@@ -93,7 +93,6 @@ export default abstract class MagentoApiService {
       logger.error(
         `Erro ao atualizar os atributos do produto ${sku} no Magento: ${error}`,
       );
-      console.log(JSON.stringify(error, null, 2));
       return {
         success: false,
         message: "Erro ao atualizar os atributos do produto.",
@@ -132,7 +131,6 @@ export default abstract class MagentoApiService {
       logger.error(
         `Erro ao adicionar mídia ao produto ${sku} no Magento: ${error}`,
       );
-      console.log(JSON.stringify(error, null, 2));
       return {
         success: false,
         message: "Erro ao adicionar mídia ao produto.",
@@ -155,9 +153,6 @@ export default abstract class MagentoApiService {
           status: appConfig.activeProducts ? 1 : 2, // Ativo ou Inativo
         },
       };
-      console.log(
-        `Ativando produto ${sku} com status: ${payload.product.status}`,
-      );
       await axios.put(
         `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}`,
         payload,
@@ -169,8 +164,6 @@ export default abstract class MagentoApiService {
         },
       );
     } catch (error) {
-      logger.error(`Erro ao ativar o produto ${sku} no Magento: ${error}`);
-      console.log(JSON.stringify(error, null, 2));
       return {
         success: false,
         message: "Erro ao ativar o produto.",
@@ -199,10 +192,6 @@ export default abstract class MagentoApiService {
         },
       );
 
-      console.log(JSON.stringify(response.data, null, 2));
-      console.log(
-        `Produto ${sku} removido da categoria ${categoryId} com sucesso.`,
-      );
       return { success: true, message: "Categoria removida com sucesso." };
     } catch (error: any) {
       // O Magento retorna erro 400 se o produto já não estiver na categoria
