@@ -77,7 +77,10 @@ export default abstract class RegisterService {
   private static insertCategories(product: IAttributes): attribute {
     if (product.configurable)
       return { attribute_code: "category_ids", value: [] };
-    return { attribute_code: "category_ids", value: product.categories };
+    return {
+      attribute_code: "category_ids",
+      value: product.categories.map((categoryId) => String(categoryId)),
+    };
   }
 
   // Embalagem
