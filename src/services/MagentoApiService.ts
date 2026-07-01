@@ -181,4 +181,42 @@ export default abstract class MagentoApiService {
       message: "Produto ativado com sucesso.",
     };
   }
+
+  // Remove o vínculo de um produto com uma categoria específica
+  static async removeProductFromCategory(
+    sku: string,
+    categoryId: number,
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      // Endpoint: DELETE /rest/all/V1/categories/{categoryId}/products/{sku}
+      const response = await axios.delete(
+        `${appConfig.magentoApiUrl}/rest/all/V1/categories/${categoryId}/products/${sku}`,
+        {
+          headers: {
+            Authorization: `Bearer ${appConfig.magentoApiToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      console.log(JSON.stringify(response.data, null, 2));
+      console.log(
+        `Produto ${sku} removido da categoria ${categoryId} com sucesso.`,
+      );
+      return { success: true, message: "Categoria removida com sucesso." };
+    } catch (error: any) {
+      // O Magento retorna erro 400 se o produto já não estiver na categoria
+      if (error.response && error.response.status === 400) {
+        return {
+          success: true,
+          message: "Produto já não estava vinculado a esta categoria.",
+        };
+      }
+
+      logger.error(
+        `Erro ao remover o produto ${sku} da categoria ${categoryId}: ${error}`,
+      );
+      return { success: false, message: "Erro ao desvincular categoria." };
+    }
+  }
 }

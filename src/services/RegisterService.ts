@@ -11,10 +11,10 @@ interface attribute {
 export default abstract class RegisterService {
   static async registerProducts(products: IAttributes[]): Promise<void> {
     try {
-      // Mapeamos o array de produtos para um array de Promises
       const productPromises = products.map(async (product) => {
         try {
           const attributes = [
+            this.removeCategory(product),
             this.insertCategories(product),
             this.insertPackaging(product),
             this.insertNumeration(product),
@@ -28,21 +28,31 @@ export default abstract class RegisterService {
             this.insertNewsToDate(product),
           ];
 
+          // 1. Enviamos os atributos
           const responseAttributes =
             await MagentoApiService.updateProductAttributes(
               product.sku,
               attributes,
             );
 
+          // 2. Enviamos a mídia
           const media = this.insertMedia(product);
           const responseMedia = await MagentoApiService.addProductMedia(
             product.sku,
             media,
           );
 
+          // 3. Forçamos a alteração de status enviando um PUT limpo ANTES de remover a categoria
           if (responseAttributes.success || responseMedia.success) {
             await MagentoApiService.activateProduct(product.sku);
           }
+
+          // 4. O GRAN FINALE: Agora que o produto já foi atualizado, teve mídia inserida e mudou de status,
+          // nós removemos a categoria. Nada mais vai rodar depois disso para recriá-la!
+          if (product.configurable) {
+            await MagentoApiService.removeProductFromCategory(product.sku, 173);
+          }
+
           return {
             success: responseAttributes.success && responseMedia.success,
             product: product,
@@ -52,19 +62,12 @@ export default abstract class RegisterService {
             `Erro ao processar o produto ${product.sku}:`,
             innerError,
           );
-          return {
-            success: false,
-            product: product,
-          };
+          return { success: false, product: product };
         }
       });
 
-      // Dispara todas as promises de produtos simultaneamente
       await Promise.all(productPromises);
-
-      console.log(
-        "Processamento de todos os produtos concluído com Promise.all.",
-      );
+      console.log("Processamento de todos os produtos concluído.");
     } catch (error) {
       console.error(`Erro fatal ao registrar a fila de produtos: ${error}`);
     }
@@ -163,5 +166,16 @@ export default abstract class RegisterService {
       };
     });
     return media;
+  }
+
+  // Auto Categoria remova
+  private static removeCategory(product: IAttributes): attribute {
+    if (product.configurable)
+      return { attribute_code: "auto_category_removed", value: "1" };
+
+    return {
+      attribute_code: "auto_category_removed",
+      value: "0",
+    };
   }
 }
