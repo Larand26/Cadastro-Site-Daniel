@@ -43,7 +43,7 @@ export default abstract class RegisterService {
           );
 
           // 3. Ativa o produto (Apenas PUT de status)
-          if (responseAttributes.success || responseMedia.success) {
+          if (responseAttributes.success && responseMedia.success) {
             await MagentoApiService.activateProduct(product.sku);
           }
 
