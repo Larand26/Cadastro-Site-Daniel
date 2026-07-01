@@ -190,12 +190,12 @@ export default abstract class ProductService {
       (attr) => attr.attribute_code === "color",
     );
     if (!attribute?.value) {
-      return "Sem cor";
+      return "";
     }
     const color = colorOptions.find(
       (el) => String(el.value) === String(attribute.value),
     );
-    return color?.label || "Sem cor";
+    return color?.label || "";
   }
 
   // Numeração
