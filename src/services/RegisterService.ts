@@ -83,22 +83,25 @@ export default abstract class RegisterService {
   // Embalagem
   private static insertPackaging(product: IAttributes): attribute {
     const value = product.packaging === "c" ? 1084 : 1083;
-    return { attribute_code: "embalamento", value: value };
+    return { attribute_code: "embalamento", value: String(value) };
   }
 
   // Numeração
   private static insertNumeration(product: IAttributes): attribute {
-    return { attribute_code: "numeracao", value: product.numeration };
+    return { attribute_code: "numeracao", value: String(product.numeration) };
   }
 
   // Tipo de Numeração
   private static insertTypeNum(product: IAttributes): attribute {
-    return { attribute_code: "tipo_de_grade", value: product.typeNum };
+    return { attribute_code: "tipo_de_grade", value: String(product.typeNum) };
   }
 
   // Preço de Revenda
   private static insertResalePrice(product: IAttributes): attribute {
-    return { attribute_code: "preco_revenda", value: product.resale_price };
+    return {
+      attribute_code: "preco_revenda",
+      value: `${product.resale_price}.99`,
+    };
   }
 
   // Descrição
