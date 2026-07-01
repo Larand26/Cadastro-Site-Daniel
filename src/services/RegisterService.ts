@@ -11,7 +11,7 @@ interface attribute {
 export default abstract class RegisterService {
   static async registerProducts(products: IAttributes[]): Promise<void> {
     try {
-      const productPromises = products.map(async (product) => {
+      for (const product of products) {
         try {
           const attributes = [
             this.removeCategory(product),
@@ -28,46 +28,40 @@ export default abstract class RegisterService {
             this.insertNewsToDate(product),
           ];
 
-          // 1. Enviamos os atributos
+          // 1. Atualiza Atributos
           const responseAttributes =
             await MagentoApiService.updateProductAttributes(
               product.sku,
               attributes,
             );
 
-          // 2. Enviamos a mídia
+          // 2. Atualiza Mídia
           const media = this.insertMedia(product);
           const responseMedia = await MagentoApiService.addProductMedia(
             product.sku,
             media,
           );
 
-          // 3. Forçamos a alteração de status enviando um PUT limpo ANTES de remover a categoria
+          // 3. Ativa o produto (Apenas PUT de status)
           if (responseAttributes.success || responseMedia.success) {
             await MagentoApiService.activateProduct(product.sku);
           }
 
-          // 4. O GRAN FINALE: Agora que o produto já foi atualizado, teve mídia inserida e mudou de status,
-          // nós removemos a categoria. Nada mais vai rodar depois disso para recriá-la!
+          // 4. Remove categoria 173
           if (product.configurable) {
             await MagentoApiService.removeProductFromCategory(product.sku, 173);
           }
 
-          return {
-            success: responseAttributes.success && responseMedia.success,
-            product: product,
-          };
+          console.log(`Produto ${product.sku} processado com sucesso.`);
         } catch (innerError) {
           console.error(
             `Erro ao processar o produto ${product.sku}:`,
             innerError,
           );
-          return { success: false, product: product };
         }
-      });
+      }
 
-      await Promise.all(productPromises);
-      console.log("Processamento de todos os produtos concluído.");
+      console.log("Processamento de TODOS os produtos concluído.");
     } catch (error) {
       console.error(`Erro fatal ao registrar a fila de produtos: ${error}`);
     }
