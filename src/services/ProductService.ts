@@ -432,6 +432,12 @@ export default abstract class ProductService {
     news_from_date: string;
     news_to_date: string;
   } {
+    if (appConfig.getActiveProducts) {
+      return {
+        news_from_date: "",
+        news_to_date: "",
+      };
+    }
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
     const to = new Date(`${year}-${month}-20 00:00:00`);

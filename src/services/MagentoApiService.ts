@@ -34,7 +34,8 @@ export default abstract class MagentoApiService {
 
       // --- GRUPO 0: Status (Condição E principal) ---
       "searchCriteria[filterGroups][0][filters][0][field]": "status",
-      "searchCriteria[filterGroups][0][filters][0][value]": 2,
+      "searchCriteria[filterGroups][0][filters][0][value]":
+        appConfig.getActiveProducts ? 1 : 2,
       "searchCriteria[filterGroups][0][filters][0][conditionType]": "eq",
     };
     for (let i = 0; i < manufacturersCodes.length; i++) {
