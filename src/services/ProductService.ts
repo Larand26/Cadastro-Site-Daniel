@@ -440,8 +440,9 @@ export default abstract class ProductService {
     }
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
-    const to = new Date(`${year}-${month}-20 00:00:00`);
-    const from = new Date(`${year}-${month + 1}-20 00:00:00`);
+    const day = new Date().getDate();
+    const to = new Date(`${year}-${month}-${day} 00:00:00`);
+    const from = new Date(`${year}-${month + 1}-${day} 00:00:00`);
     return {
       news_from_date: Utils.formatDateToMagento(to),
       news_to_date: Utils.formatDateToMagento(from),

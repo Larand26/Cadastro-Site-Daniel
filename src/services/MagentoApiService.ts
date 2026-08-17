@@ -31,8 +31,6 @@ export default abstract class MagentoApiService {
     const params: Record<string, any> = {
       "searchCriteria[pageSize]": 100,
       "searchCriteria[currentPage]": 1,
-
-      // --- GRUPO 0: Status (Condição E principal) ---
       "searchCriteria[filterGroups][0][filters][0][field]": "status",
       "searchCriteria[filterGroups][0][filters][0][value]":
         appConfig.getActiveProducts ? 1 : 2,
@@ -49,7 +47,6 @@ export default abstract class MagentoApiService {
     return params;
   }
 
-  // Pega as opções de cores
   static async fetchColorOptions(): Promise<
     { label: string; value: string }[]
   > {
@@ -67,146 +64,48 @@ export default abstract class MagentoApiService {
     }
   }
 
-  // Atualiza os atributos do produto no Magento
-  static async updateProductAttributes(
+  // ✅ NOVO MÉTODO ATÔMICO: Salva Atributos, Categorias, Mídia e Status de uma só vez!
+  static async saveFullProduct(
     sku: string,
     attributes: { attribute_code: string; value: any }[],
+    media: any[],
+    isActive: boolean = true,
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const payload = {
+      const payload: any = {
         product: {
           sku,
+          status: isActive ? 1 : 2,
           custom_attributes: attributes,
         },
       };
 
-      await axios.put(
-        `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${appConfig.magentoApiToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-    } catch (error) {
-      logger.error(
-        `Erro ao atualizar os atributos do produto ${sku} no Magento: ${error}`,
-      );
-      return {
-        success: false,
-        message: "Erro ao atualizar os atributos do produto.",
-      };
-    }
-    return {
-      success: true,
-      message: "Atributos do produto atualizados com sucesso.",
-    };
-  }
-
-  static async addProductMedia(
-    sku: string,
-    media: any[],
-  ): Promise<{ success: boolean; message: string }> {
-    try {
-      const payload = {
-        product: {
-          sku,
-          // CORREÇÃO: A chave correta é media_gallery_entries
-          media_gallery_entries: media,
-        },
-      };
-
-      await axios.put(
-        `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${appConfig.magentoApiToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-    } catch (error) {
-      logger.error(
-        `Erro ao adicionar mídia ao produto ${sku} no Magento: ${error}`,
-      );
-      return {
-        success: false,
-        message: "Erro ao adicionar mídia ao produto.",
-      };
-    }
-    return {
-      success: true,
-      message: "Mídia do produto adicionada com sucesso.",
-    };
-  }
-
-  // Ativa o produto no Magento
-  static async activateProduct(
-    sku: string,
-  ): Promise<{ success: boolean; message: string }> {
-    try {
-      const payload = {
-        product: {
-          sku,
-          status: appConfig.activeProducts ? 1 : 2, // Ativo ou Inativo
-        },
-      };
-      await axios.put(
-        `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${appConfig.magentoApiToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-    } catch (error) {
-      return {
-        success: false,
-        message: "Erro ao ativar o produto.",
-      };
-    }
-    return {
-      success: true,
-      message: "Produto ativado com sucesso.",
-    };
-  }
-
-  // Remove o vínculo de um produto com uma categoria específica
-  static async removeProductFromCategory(
-    sku: string,
-    categoryId: number,
-  ): Promise<{ success: boolean; message: string }> {
-    try {
-      // Endpoint: DELETE /rest/all/V1/categories/{categoryId}/products/{sku}
-      const response = await axios.delete(
-        `${appConfig.magentoApiUrl}/rest/all/V1/categories/${categoryId}/products/${sku}`,
-        {
-          headers: {
-            Authorization: `Bearer ${appConfig.magentoApiToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      return { success: true, message: "Categoria removida com sucesso." };
-    } catch (error: any) {
-      // O Magento retorna erro 400 se o produto já não estiver na categoria
-      if (error.response && error.response.status === 400) {
-        return {
-          success: true,
-          message: "Produto já não estava vinculado a esta categoria.",
-        };
+      // Se houver fotos, anexa no mesmo payload
+      if (media && media.length > 0) {
+        payload.product.media_gallery_entries = media;
       }
 
-      logger.error(
-        `Erro ao remover o produto ${sku} da categoria ${categoryId}: ${error}`,
+      await axios.put(
+        `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${appConfig.magentoApiToken}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
-      return { success: false, message: "Erro ao desvincular categoria." };
+
+      return {
+        success: true,
+        message: "Produto completo atualizado com sucesso.",
+      };
+    } catch (error) {
+      logger.error(`Erro ao atualizar o produto ${sku} no Magento: ${error}`);
+      return {
+        success: false,
+        message: "Erro ao atualizar o produto completo.",
+      };
     }
   }
 }

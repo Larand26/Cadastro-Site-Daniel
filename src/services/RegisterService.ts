@@ -1,7 +1,7 @@
 import type { IAttributes } from "../interfaces/interfaces.js";
-
 import MagentoApiService from "./MagentoApiService.js";
 import Utils from "../utils/Utils.js";
+import appConfig from "../config/app.config.js";
 
 interface attribute {
   attribute_code: string;
@@ -28,31 +28,24 @@ export default abstract class RegisterService {
             this.insertNewsToDate(product),
           ];
 
-          // 1. Atualiza Atributos
-          const responseAttributes =
-            await MagentoApiService.updateProductAttributes(
-              product.sku,
-              attributes,
-            );
-
-          // 2. Atualiza Mídia
           const media = this.insertMedia(product);
-          const responseMedia = await MagentoApiService.addProductMedia(
+          const isActive = appConfig.activeProducts;
+
+          // 🚀 UMA ÚNICA REQUISIÇÃO ATÔMICA
+          const response = await MagentoApiService.saveFullProduct(
             product.sku,
+            attributes,
             media,
+            isActive,
           );
 
-          // 3. Ativa o produto (Apenas PUT de status)
-          if (responseAttributes.success && responseMedia.success) {
-            await MagentoApiService.activateProduct(product.sku);
+          if (response.success) {
+            console.log(`Produto ${product.sku} processado com sucesso.`);
+          } else {
+            console.error(
+              `Falha ao processar produto ${product.sku}: ${response.message}`,
+            );
           }
-
-          // 4. Remove categoria 173
-          if (product.configurable) {
-            await MagentoApiService.removeProductFromCategory(product.sku, 173);
-          }
-
-          console.log(`Produto ${product.sku} processado com sucesso.`);
         } catch (innerError) {
           console.error(
             `Erro ao processar o produto ${product.sku}:`,
@@ -169,7 +162,7 @@ export default abstract class RegisterService {
     return media;
   }
 
-  // Auto Categoria remova
+  // Auto Categoria removida
   private static removeCategory(product: IAttributes): attribute {
     if (product.configurable)
       return { attribute_code: "auto_category_removed", value: "1" };
