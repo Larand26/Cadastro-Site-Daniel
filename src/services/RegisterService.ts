@@ -28,19 +28,48 @@ export default abstract class RegisterService {
             this.insertNewsToDate(product),
           ];
 
-          const media = this.insertMedia(product);
+          const mediaList = this.insertMedia(product);
           const isActive = appConfig.activeProducts;
 
-          // 🚀 UMA ÚNICA REQUISIÇÃO ATÔMICA
+          // 🚀 ETAPA 1: Salva o produto sem payload de imagem
           const response = await MagentoApiService.saveFullProduct(
             product.sku,
             attributes,
-            media,
             isActive,
           );
 
           if (response.success) {
-            console.log(`Produto ${product.sku} processado com sucesso.`);
+            console.log(
+              `Dados principais do produto ${product.sku} salvos com sucesso.`,
+            );
+
+            // 🚀 ETAPA 2: Se a etapa 1 funcionou, processa as mídias de forma isolada
+            if (mediaList && mediaList.length > 0) {
+              for (const media of mediaList) {
+                // Try/catch isolado garante que falhas no Base64 não anulem a gravação do produto
+                try {
+                  const mediaResponse =
+                    await MagentoApiService.uploadProductImage(
+                      product.sku,
+                      media,
+                    );
+                  if (mediaResponse.success) {
+                    console.log(
+                      `Imagem anexada ao produto ${product.sku} com sucesso.`,
+                    );
+                  } else {
+                    console.error(
+                      `Falha isolada na imagem do produto ${product.sku}: ${mediaResponse.message}`,
+                    );
+                  }
+                } catch (mediaError) {
+                  console.error(
+                    `Erro inesperado ao processar mídia para o SKU ${product.sku}:`,
+                    mediaError,
+                  );
+                }
+              }
+            }
           } else {
             console.error(
               `Falha ao processar produto ${product.sku}: ${response.message}`,
@@ -48,7 +77,7 @@ export default abstract class RegisterService {
           }
         } catch (innerError) {
           console.error(
-            `Erro ao processar o produto ${product.sku}:`,
+            `Erro fatal no processamento completo do produto ${product.sku}:`,
             innerError,
           );
         }
@@ -131,11 +160,12 @@ export default abstract class RegisterService {
     return { attribute_code: "news_to_date", value: product.news_to_date };
   }
 
-  // Imagens
+  // Imagens formatadas perfeitamente para o schema Entry do Magento Media endpoint
   private static insertMedia(product: IAttributes): any[] {
     if (product.configurable) return [];
     if (product.pictures.length === 0) return [];
-    const media = product.pictures.map((picture: Buffer, index: number) => {
+
+    return product.pictures.map((picture: Buffer, index: number) => {
       const base64Image = picture.toString("base64");
       return {
         media_type: "image",
@@ -155,11 +185,11 @@ export default abstract class RegisterService {
         content: {
           base64_encoded_data: base64Image,
           type: "image/jpeg",
-          name: Utils.cleanFileName(product.name) + "_" + (index + 1) + ".jpg",
+          // ✅ NOME CURTO E SEGURO: Usando o SKU em vez do nome do produto
+          name: `${Utils.cleanFileName(product.name)}_${product.sku}_${index + 1}.jpg`,
         },
       };
     });
-    return media;
   }
 
   // Auto Categoria removida

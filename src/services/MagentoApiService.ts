@@ -64,11 +64,10 @@ export default abstract class MagentoApiService {
     }
   }
 
-  // ✅ NOVO MÉTODO ATÔMICO: Salva Atributos, Categorias, Mídia e Status de uma só vez!
+  // ✅ ETAPA 1: Salva apenas Atributos, Categorias e Status sem o payload pesado de mídia
   static async saveFullProduct(
     sku: string,
     attributes: { attribute_code: string; value: any }[],
-    media: any[],
     isActive: boolean = true,
   ): Promise<{ success: boolean; message: string }> {
     try {
@@ -79,11 +78,6 @@ export default abstract class MagentoApiService {
           custom_attributes: attributes,
         },
       };
-
-      // Se houver fotos, anexa no mesmo payload
-      if (media && media.length > 0) {
-        payload.product.media_gallery_entries = media;
-      }
 
       await axios.put(
         `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}`,
@@ -98,13 +92,58 @@ export default abstract class MagentoApiService {
 
       return {
         success: true,
-        message: "Produto completo atualizado com sucesso.",
+        message: "Dados puros do produto atualizados com sucesso.",
       };
     } catch (error) {
-      logger.error(`Erro ao atualizar o produto ${sku} no Magento: ${error}`);
+      logger.error(
+        `Erro ao atualizar os dados do produto ${sku} no Magento: ${error}`,
+      );
       return {
         success: false,
         message: "Erro ao atualizar o produto completo.",
+      };
+    }
+  }
+
+  // ✅ ETAPA 2: Processamento exclusivo da imagem em Base64
+  static async uploadProductImage(
+    sku: string,
+    mediaEntry: any,
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const payload = {
+        entry: mediaEntry,
+      };
+
+      await axios.post(
+        `${appConfig.magentoApiUrl}/rest/all/V1/products/${sku}/media`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${appConfig.magentoApiToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      return {
+        success: true,
+        message: "Upload de imagem realizado com sucesso.",
+      };
+    } catch (error: any) {
+      // ✅ CAPTURA DO ERRO DETALHADO DO MAGENTO
+      const magentoErrorMessage =
+        error.response?.data?.message || error.message;
+      const magentoErrorParameters = error.response?.data?.parameters || "";
+
+      console.error(
+        `\n[ERRO MAGENTO - SKU ${sku}]: ${magentoErrorMessage}`,
+        magentoErrorParameters ? magentoErrorParameters : "",
+      );
+
+      return {
+        success: false,
+        message: magentoErrorMessage,
       };
     }
   }
